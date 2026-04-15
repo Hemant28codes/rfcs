@@ -41,6 +41,7 @@ This feature allows a platform to signal that the run image already contains a v
 - Target Persona: Platform implementors and operators.
 - Example: A platform builds a run image with a symlink at /cnb/lifecycle/launcher pointing to a platform-specific binary. During the export phase, the platform passes a flag to skip the launcher installation, preserving the existing symlink.
 
+
 # How it Works
 [how-it-works]: #how-it-works
 
@@ -48,6 +49,14 @@ A new flag (e.g., --launcher-in-run-image) will be added to the exporter phase.
 
 When the flag is set, the exporter MUST skip the launcher binary layer but MUST still export the configuration and process-types layers.
 The platform asserts that the run image contains a valid launcher at the location defined by CNB_LAUNCHER_PATH.
+
+Just to give you an idea of what our usecase is:
+
+- Current Setup
+Source code + Builder(contains lifecycle) -----(Build)----> Application image(contains launcher from lifecycle in builder + run image)
+
+- Proposed Setup
+Source code + Builder(contains lifecycle) -----(Build)----> Application image(contains run image), Run image -> will have launcher installed
 
 # Migration
 [migration]: #migration
