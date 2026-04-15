@@ -1,0 +1,73 @@
+# Meta
+[meta]: #meta
+- Name: Launcher in Run Image
+- Start Date: 2026-04-15
+- Author(s): Hemant28codes
+- Status: Draft
+- RFC Pull Request: (leave blank)
+- CNB Pull Request: (leave blank)
+- CNB Issue: (leave blank)
+- Supersedes: N/A
+
+# Summary
+[summary]: #summary
+
+This RFC proposes a mechanism to allow the launcher binary to be provided by the run image instead of being unconditionally injected by the lifecycle's exporter phase. By introducing a specific flag, the exporter can be instructed to skip the creation of the launcher binary layer, relying instead on a pre-existing binary or symlink at the designated path in the run image.
+
+# Definitions
+[definitions]: #definitions
+
+- Launcher: The binary that acts as the container entrypoint, responsible for setting up the environment and executing the application process.
+- Exporter: The lifecycle phase responsible for creating the final application image, which currently adds a launcher layer unconditionally.
+- Run Image: The base image used for the final application container.
+- CNB_LAUNCHER_PATH: The path where the platform expects the launcher to reside (e.g., /cnb/lifecycle/launcher).
+
+# Motivation
+[motivation]: #motivation
+
+The current exporter implementation unconditionally creates a fresh file-based layer to include the launcher binary, which overwrites any existing files or symlinks at that path in the run image. This prevents platforms from providing a customized launcher directly within their base images, which is necessary for certain environments or security configurations.
+
+# What it is
+[what-it-is]: #what-it-is
+
+This feature allows a platform to signal that the run image already contains a valid launcher.
+
+- Target Persona: Platform implementors and operators.
+- Example: A platform builds a run image with a symlink at /cnb/lifecycle/launcher pointing to a platform-specific binary. During the export phase, the platform passes a flag to skip the launcher installation, preserving the existing symlink.
+
+# How it Works
+[how-it-works]: #how-it-works
+
+A new flag (e.g., --launcher-in-run-image) will be added to the exporter phase.
+
+When the flag is set, the exporter MUST skip the launcher binary layer but MUST still export the configuration and process-types layers.
+The platform asserts that the run image contains a valid launcher at the location defined by CNB_LAUNCHER_PATH.
+
+# Migration
+[migration]: #migration
+
+This change requires a Platform API spec update, as the current spec mandates that the exporter install the launcher.
+
+- Platform Developers: Will need to update their implementations to support and pass the new flag when appropriate.
+- Compatibility: Since this is an opt-in flag, existing platforms and images will continue to function as they do today by default.
+
+# Drawbacks
+[drawbacks]: #drawbacks
+
+- Validation Risk: If the flag is set but the run image does not actually contain a valid launcher, the resulting application image will fail at runtime.
+- Complexity: Adds a conditional path to the exporter's image construction logic.
+
+# Unresolved Questions
+[unresolved-questions]: #unresolved-questions
+
+- Should the exporter perform a check to verify the existence of the launcher at CNB_LAUNCHER_PATH before completing the export?
+- What should the exact naming of the flag be to ensure clarity across different platform implementations?
+
+# Spec. Changes (OPTIONAL)
+[spec-changes]: #spec-changes
+The Platform API specification must be updated to include the new flag and define the behavior where the launcher binary layer is skipped if the platform asserts its presence in the run image.
+
+# History
+[history]: #history
+
+- 2026-04-15: Initial draft proposed by Hemant Goyal based on community discussion.
