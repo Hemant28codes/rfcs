@@ -25,7 +25,13 @@ This RFC proposes a mechanism to allow the launcher binary to be provided by the
 # Motivation
 [motivation]: #motivation
 
-The current exporter implementation unconditionally creates a fresh file-based layer to include the launcher binary, which overwrites any existing files or symlinks at that path in the run image. This prevents platforms from providing a customized launcher directly within their base images, which is necessary for certain environments or security configurations.
+Why should we do this? Currently, the exporter phase replaces any existing file or symlink at the launcher path with a new file-based layer, preventing platforms from providing their own launcher in the base image.
+
+What use cases does it support?
+- Security Patching via Rebase: This is a critical driver for the proposal. By making the launcher part of the run image, platforms can update the launcher to patch vulnerabilities (e.g., Go CVEs reported by security scanners in the binary) simply by updating the run image and performing a rebase. This eliminates the need to trigger a full build for thousands of applications just to update a shared launcher binary.
+- Customized Launchers: Platforms that require specialized or environment-specific launcher logic can bake it directly into their base image infrastructure.
+
+What is the expected outcome? Platforms can opt-out of the automatic launcher installation, ensuring that the launcher binary is managed as a run-time dependency that can be updated independently of the application build lifecycle.
 
 # What it is
 [what-it-is]: #what-it-is
