@@ -12,8 +12,14 @@
 # Summary
 [summary]: #summary
 
-This RFC proposes a mechanism to allow the launcher binary to be provided by the run image instead of being unconditionally injected by the lifecycle's exporter phase. By introducing a specific flag, the exporter can be instructed to skip the creation of the launcher binary layer, relying instead on a pre-existing binary or symlink at the designated path in the run image.
+RFC: Launcher in Run Image
 
+Name	Launcher in Run Image
+Start Date	2026-04-15
+Author(s)	Hemant28codes
+Status	Draft
+Summary
+This RFC proposes a mechanism to allow the launcher binary to be provided by the run image instead of being unconditionally injected by the lifecycle's exporter phase. By introducing a specific flag, the exporter can be instructed to replace the standard launcher binary with a symlink in the "Buildpacks Application Launcher" layer, pointing to a path in the run image. This ensures that the application image structure remains consistent while decoupling the launcher's lifecycle from the application build.
 # Definitions
 [definitions]: #definitions
 
@@ -47,10 +53,29 @@ This feature allows a platform to signal that the run image already contains a v
 
 A new flag (e.g., --launcher-in-run-image) will be added to the exporter phase.
 
-When the flag is set, the exporter MUST skip the launcher binary layer but MUST still export the configuration and process-types layers.
-The platform asserts that the run image contains a valid launcher at the location defined by CNB_LAUNCHER_PATH.
+### Layer Preservation
+The "Buildpacks Application Launcher" layer must always be present in the application image to maintain OCI artifact compatibility. The difference lies in whether this layer contains the binary itself or a symlink.
 
-Just to give you an idea of what our usecase is:
+| Feature | Before (Current) | After (Proposed) |
+| :--- | :--- | :--- |
+| **Launcher Path** | `/cnb/lifecycle/launcher` | `/cnb/lifecycle/launcher` |
+| **Content Type** | Self-contained executable (~2.8 MB) | Symlink to run image path |
+| **Dependency** | None (Independent layer) | Explicit dependency on Run Image layer |
+
+### Rebaser Responsibilities
+With symlink-based launchers, the rebaser gains a new validation duty. It must verify that the target run image actually contains a valid launcher binary at the expected path. Failure to do so would result in a broken application at runtime.
+
+#### Metadata Changes
+The `io.buildpacks.lifecycle.metadata` label will be updated to include:
+*   `launcher.type`: "binary" or "symlink"
+*   `launcher.target`: The absolute path in the run image (only if type is symlink).
+
+#### Run Image Advertising
+Run images that provide a launcher should advertise this capability via a label:
+`io.buildpacks.run.launcher.path=/usr/local/bin/launcher`
+
+
+Just to give an idea of what our usecase is:
 
 - Current Setup
 Source code + Builder(contains lifecycle) -----(Build)----> Application image(contains launcher from lifecycle in builder + run image)
