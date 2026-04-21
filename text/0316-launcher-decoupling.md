@@ -97,6 +97,8 @@ This change requires a Platform API spec update, as the current spec mandates th
 
 - Should the exporter perform a check to verify the existence of the launcher at CNB_LAUNCHER_PATH before completing the export?
 - What should the exact naming of the flag be to ensure clarity across different platform implementations?
+- Can we have a custom launcher or do we need to depend on the launcher provided by buildpacks, or maybe add on top of the buildpacks launcher?
+- Will the launcher going to be a seperate binary which doesn't depend on spec - buildpack API, platform API, lifecycle version, libcnb version and will be decoupled from these?
 
 # Spec. Changes (OPTIONAL)
 [spec-changes]: #spec-changes
