@@ -14,11 +14,6 @@
 
 RFC: Launcher in Run Image
 
-Name	Launcher in Run Image
-Start Date	2026-04-15
-Author(s)	Hemant28codes
-Status	Draft
-Summary
 This RFC proposes a mechanism to allow the launcher binary to be provided by the run image instead of being unconditionally injected by the lifecycle's exporter phase. By introducing a specific flag, the exporter can be instructed to replace the standard launcher binary with a symlink in the "Buildpacks Application Launcher" layer, pointing to a path in the run image. This ensures that the application image structure remains consistent while decoupling the launcher's lifecycle from the application build.
 # Definitions
 [definitions]: #definitions
