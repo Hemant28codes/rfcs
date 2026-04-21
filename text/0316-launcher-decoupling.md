@@ -106,3 +106,4 @@ The Platform API specification must be updated to include the new flag and defin
 [history]: #history
 
 - 2026-04-15: Initial draft proposed by Hemant Goyal based on community discussion.
+- 2026-04-20: Updated based on RFC discussions.
